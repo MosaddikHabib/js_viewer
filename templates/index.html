@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Insight | Professional Viewer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>JSON Insight</h1>
+                <p>Advanced Data Explorer</p>
+            </div>
+            
+            <div class="upload-section">
+                <label for="fileInput" class="custom-file-upload">
+                    <span>✨ Upload JSON</span>
+                    <input type="file" id="fileInput" accept=".json">
+                </label>
+                <button id="clearBtn" class="secondary-btn">
+                    <span>🧹</span> Clear Workspace
+                </button>
+            </div>
+
+            <div class="info-card">
+                <h3>💡 Pro Tips</h3>
+                <ul>
+                    <li>🚀 <span>Select a Key</span> to filter values</li>
+                    <li>🔍 <span>Click Results</span> to locate in code</li>
+                    <li>📂 <span>Upload</span> for large datasets</li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="editor-pane">
+                <div class="pane-header">
+                    <span>📝 Source JSON</span>
+                </div>
+                <textarea id="jsonInput" placeholder="Paste your raw JSON content here..."></textarea>
+            </div>
+
+            <div class="viewer-pane">
+                <div class="pane-header">
+                    <span>⚡ Live Preview</span>
+                    <div class="header-controls">
+                        <select id="keySelector" class="key-selector">
+                            <option value="">Filter by key...</option>
+                        </select>
+                        <div id="statusIndicator" class="status">Idle</div>
+                    </div>
+                </div>
+                <div id="jsonTree" class="json-tree">
+                    <div class="info-message">Paste JSON to start exploration</div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
