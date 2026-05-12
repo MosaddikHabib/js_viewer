@@ -5,9 +5,124 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearBtn = document.getElementById('clearBtn');
     const statusIndicator = document.getElementById('statusIndicator');
     const keySelector = document.getElementById('keySelector');
+    const csvFileInput = document.getElementById('csvFileInput');
+    const csvMode = document.getElementById('csvMode');
+    const jsonMode = document.getElementById('jsonMode');
+    const csvTableContainer = document.getElementById('csvTableContainer');
+    const exitCsvBtn = document.getElementById('exitCsvBtn');
+    const fullScreenBtn = document.getElementById('fullScreenBtn');
+    const wordWrapToggle = document.getElementById('wordWrapToggle');
 
     let currentJsonString = "";
     let debounceTimer;
+
+    // CSV Handling
+    csvFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('/parse_csv', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            
+            if (response.ok) {
+                renderCsvTable(result.data);
+                jsonMode.style.display = 'none';
+                csvMode.style.display = 'block';
+            } else {
+                alert(result.error || 'Failed to parse CSV');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error uploading CSV');
+        }
+    });
+
+    exitCsvBtn.addEventListener('click', () => {
+        csvMode.style.display = 'none';
+        jsonMode.style.display = 'block';
+    });
+
+    fullScreenBtn.addEventListener('click', () => {
+        const wrapper = document.querySelector('.csv-viewer-container');
+        if (!document.fullscreenElement) {
+            wrapper.requestFullscreen().catch(err => {
+                alert(`Error attempting to enable full-screen mode: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    });
+
+    wordWrapToggle.addEventListener('change', () => {
+        const table = csvTableContainer.querySelector('.csv-table');
+        if (table) {
+            if (wordWrapToggle.checked) {
+                table.classList.add('word-wrap');
+            } else {
+                table.classList.remove('word-wrap');
+            }
+        }
+    });
+
+    const renderCsvTable = (data) => {
+        if (!data || data.length === 0) {
+            csvTableContainer.innerHTML = '<div class="info-message">CSV is empty</div>';
+            return;
+        }
+
+        const table = document.createElement('table');
+        table.className = 'csv-table';
+        if (wordWrapToggle.checked) table.classList.add('word-wrap');
+        
+        // Add column headers (A, B, C...)
+        const headerRow = document.createElement('tr');
+        const emptyCorner = document.createElement('th');
+        emptyCorner.className = 'row-index';
+        headerRow.appendChild(emptyCorner);
+
+        const maxCols = Math.max(...data.map(row => row.length));
+        for (let i = 0; i < maxCols; i++) {
+            const th = document.createElement('th');
+            th.textContent = getColumnLabel(i);
+            headerRow.appendChild(th);
+        }
+        table.appendChild(headerRow);
+
+        // Add data rows with indices (1, 2, 3...)
+        data.forEach((rowData, rowIndex) => {
+            const tr = document.createElement('tr');
+            const rowIdxTh = document.createElement('th');
+            rowIdxTh.className = 'row-index';
+            rowIdxTh.textContent = rowIndex + 1;
+            tr.appendChild(rowIdxTh);
+
+            for (let i = 0; i < maxCols; i++) {
+                const td = document.createElement('td');
+                td.textContent = rowData[i] || '';
+                tr.appendChild(td);
+            }
+            table.appendChild(tr);
+        });
+
+        csvTableContainer.innerHTML = '';
+        csvTableContainer.appendChild(table);
+    };
+
+    const getColumnLabel = (index) => {
+        let label = '';
+        while (index >= 0) {
+            label = String.fromCharCode((index % 26) + 65) + label;
+            index = Math.floor(index / 26) - 1;
+        }
+        return label;
+    };
 
     const updateView = async () => {
         const value = jsonInput.value.trim();

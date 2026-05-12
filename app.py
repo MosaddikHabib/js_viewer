@@ -90,5 +90,21 @@ def get_values():
     except json.JSONDecodeError as e:
         return jsonify({'error': str(e)}), 400
 
+@app.route('/parse_csv', methods=['POST'])
+def parse_csv():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    if file:
+        import csv
+        import io
+        stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+        csv_input = csv.reader(stream)
+        data = list(csv_input)
+        return jsonify({'data': data})
+
 if __name__ == '__main__':
     app.run(debug=True)
